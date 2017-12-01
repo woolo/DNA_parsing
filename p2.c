@@ -45,48 +45,6 @@ Note: word 1, word 2, and word n are unique.
 
 int a[SIZE];                    /* intitialize an array with 2^20 0 */
 
-/* renew_word gurantee to load 20 consecutive valid bits */
-/* int renew_word(FILE *f, int *location){ */
-/*   unsigned int index; */
-/*   unsigned int value; */
-/*   char c; */
-
-/*   for(int i = 0; i < 20; i++){ */
-/*     ++*location; */
-/*     c = getc(f); */
-/*     bool isValidValue = true;  // true */
-/*     switch(c){ */
-/*     case 'A': */
-/*     case 'a': */
-/*       value = 0x0; */
-/*       break; */
-/*     case 'T': */
-/*     case 't': */
-/*       value = 0x1; */
-/*       break; */
-/*     case 'C': */
-/*     case 'c': */
-/*       value = 0x2; */
-/*       break; */
-/*     case 'G': */
-/*     case 'g': */
-/*       value = 0x3; */
-/*       break; */
-/*     default: */
-/*       isValidValue = false; */
-/*       i = 0;               /\* important to get consecutive 10 bits here *\/ */
-/*     } */
-/*     if(isValidValue){ */
-/*       /\* "add" value to the index by bitwise OR *\/ */
-/*       index = index | value; */
-/*       /\* shift left the current index by 2 bits*\/ */
-/*       index = index << 2; */
-/*     } */
-/*   } */
-/*   return index; */
-
-/* } */
-
 int main(int argc, char **argv){
   char c;
   FILE *f;
@@ -103,12 +61,6 @@ int main(int argc, char **argv){
   unsigned int value;
 
   int location = 0;
-
-  /* // load the first 20 valid bits */
-  /* index = renew_word(f, &location); */
-
-  /* ++a[index & 0xFFFFF];           /\* Use the lower 20 bits as a hash *\/ */
-
 
   // now read the file
   while ((c = getc(f)) != EOF){
@@ -192,11 +144,10 @@ int main(int argc, char **argv){
   int above800 = 0;
   int above900 = 0;
 
-
   for(int k = 0; k < SIZE; k++){
     int i = k;
     for(int j=0; j < 10; j++){
-      switch( (i & 0xC0000) >> 18){  // get the value in of 20th and 19th bit
+      switch( (i & 0xC0000) >> 18){  // get the value in of 20th and 19th bit as a 2 bit binary
       case 0x0:
         printf("%c", 'A');
         break;
@@ -210,7 +161,8 @@ int main(int argc, char **argv){
         printf("%c", 'G');
         break;
       default:
-        printf("Error: We should never see this\n");
+        fprintf(stderr, "Error: Unexpected pasred value.\n");
+        return 1;
       }
       i = i << 2;
     }
