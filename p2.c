@@ -45,6 +45,48 @@ Note: word 1, word 2, and word n are unique.
 
 int a[SIZE];                    /* intitialize an array with 2^20 0 */
 
+/* renew_word gurantee to load 20 consecutive valid bits */
+/* int renew_word(FILE *f, int *location){ */
+/*   unsigned int index; */
+/*   unsigned int value; */
+/*   char c; */
+
+/*   for(int i = 0; i < 20; i++){ */
+/*     ++*location; */
+/*     c = getc(f); */
+/*     bool isValidValue = true;  // true */
+/*     switch(c){ */
+/*     case 'A': */
+/*     case 'a': */
+/*       value = 0x0; */
+/*       break; */
+/*     case 'T': */
+/*     case 't': */
+/*       value = 0x1; */
+/*       break; */
+/*     case 'C': */
+/*     case 'c': */
+/*       value = 0x2; */
+/*       break; */
+/*     case 'G': */
+/*     case 'g': */
+/*       value = 0x3; */
+/*       break; */
+/*     default: */
+/*       isValidValue = false; */
+/*       i = 0;               /\* important to get consecutive 10 bits here *\/ */
+/*     } */
+/*     if(isValidValue){ */
+/*       /\* "add" value to the index by bitwise OR *\/ */
+/*       index = index | value; */
+/*       /\* shift left the current index by 2 bits*\/ */
+/*       index = index << 2; */
+/*     } */
+/*   } */
+/*   return index; */
+
+/* } */
+
 int main(int argc, char **argv){
   char c;
   FILE *f;
@@ -53,50 +95,22 @@ int main(int argc, char **argv){
     f = fopen(argv[1], "r"); /* "r" for read */
   }
   else{
-    printf("Expected ONLY 1 command line arugemnt!\n");
+    fprintf(stderr, "Expected ONLY 1 command line arugemnt!\n");
     return 1;
   }
 
   unsigned int index;
   unsigned int value;
 
-  // load the first 20 valid bits
-  for(int i = 0; i < 20; i++){
-    c = getc(f);
-    bool isValidValue = true;  // true
-    switch(c){
-    case 'A':
-    case 'a':
-      value = 0x0;
-      break;
-    case 'T':
-    case 't':
-      value = 0x1;
-      break;
-    case 'C':
-    case 'c':
-      value = 0x2;
-      break;
-    case 'G':
-    case 'g':
-      value = 0x3;
-      break;
-    default:
-      isValidValue = false;
-      i = 0;               /* important to get consecutive 10 bits here */
-    }
-    if(isValidValue){
-      /* "add" value to the index by bitwise OR */
-      index = index | value;
-      /* shift left the current index by 2 bits*/
-      index = index << 2;
-    }
-  }
+  int location = 0;
 
-  ++a[index & 0xFFFFF];           /* Use the lower 20 bits as a hash */
+  /* // load the first 20 valid bits */
+  /* index = renew_word(f, &location); */
 
-  int location = 20;
-  // now read the rest of the file
+  /* ++a[index & 0xFFFFF];           /\* Use the lower 20 bits as a hash *\/ */
+
+
+  // now read the file
   while ((c = getc(f)) != EOF){
     bool isValidValue = true;  // true
     switch(c){
@@ -123,17 +137,61 @@ int main(int argc, char **argv){
       /* "add" value to the index by bitwise OR */
       index = index | value;
       /* Use the lower 20 bits as a hash */
+      ++location;
       ++a[index & 0xFFFFF];
       /* shift left the current index by 2 bits*/
       index = index << 2;
     }
-  }
+    else{
+      /* use a for loop to get a valid word (10 consecutive characters) */
+      int length = 0;
+      while(((c = getc(f)) != EOF ) && length <= 10){
+        ++location;
+        bool isValidValue = true;
+        switch(c){
+        case 'A':
+        case 'a':
+          value = 0x0;
+          break;
+        case 'T':
+        case 't':
+          value = 0x1;
+          break;
+        case 'C':
+        case 'c':
+          value = 0x2;
+          break;
+        case 'G':
+        case 'g':
+          value = 0x3;
+          break;
+        default:
+          isValidValue = false;
+          length = 0;               /* important to get consecutive 10 characters here by set length to 0 */
+        }
+        if(isValidValue){
+          ++length;
+          /* "add" value to the index by bitwise OR */
+          index = index | value;
+          /* shift left the current index by 2 bits*/
+          index = index << 2;
+        }
+      }    // end of for loop
+      /* after the for loop we got the valid address */
+      ++a[index & 0xFFFFF];
+      /* shift left the current index by 2 bits*/
+      index = index << 2;
+    }  // end of else
+  }  // end of while loop
 
   int max = 0;
-  int above300 = 0;
   int above400 = 0;
   int above500 = 0;
   int above600 = 0;
+  int above700 = 0;
+  int above800 = 0;
+  int above900 = 0;
+
 
   for(int k = 0; k < SIZE; k++){
     int i = k;
@@ -158,17 +216,20 @@ int main(int argc, char **argv){
     }
     printf(" %d\n", a[k]);
     max = a[k] > max ? a[k] : max;
-    above300 += a[k] > 100 ? 1 : 0;
-    above400 += a[k] > 150 ? 1 : 0;
+    above400 += a[k] > 400 ? 1 : 0;
     above500 += a[k] > 500 ? 1 : 0;
     above600 += a[k] > 600 ? 1 : 0;
-
+    above700 += a[k] > 700 ? 1 : 0;
+    above800 += a[k] > 800 ? 1 : 0;
+    above900 += a[k] > 900 ? 1 : 0;
   }
   printf("Max number of apperance is: %d\n", max);
-  printf("Apperance number above 300 is: %d\n", above300);
   printf("Apperance number above 400 is: %d\n", above400);
   printf("Apperance number above 500 is: %d\n", above500);
   printf("Apperance number above 600 is: %d\n", above600);
+  printf("Apperance number above 700 is: %d\n", above700);
+  printf("Apperance number above 800 is: %d\n", above800);
+  printf("Apperance number above 900 is: %d\n", above900);
 
   return 0;
 }
