@@ -59,98 +59,116 @@ int main(int argc, char **argv){
 
   unsigned int index;
   unsigned int value;
-  unsigned low20bits = index & 0xFFFFF; /* use only the lower 20 bits */
 
-// load the first 20 valid bits
-    for(int i = 0; i < 20; i++){
-      c = getc(f);
-      bool isValidValue = true;  // true
-      switch(c){
-      case 'A':
-      case 'a':
-        value = 0x0;
-        break;
-      case 'T':
-      case 't':
-        value = 0x1;
-        break;
-      case 'C':
-      case 'c':
-        value = 0x2;
-        break;
-      case 'G':
-      case 'g':
-        value = 0x3;
-        break;
-      default:
-        isValidValue = false;
-        i = 0;               /* important to get consecutive 10 bits here */
-      }
-      if(isValidValue){
-        /* "add" value to the index by bitwise OR */
-        index = index | value;
-        /* shift left the current index by 2 bits*/
-        index = index << 2;
-      }
-    }
-
-    ++a[index & 0xFFFFF];           /* Use the lower 20 bits as a hash */
-
-    int location = 20;
-    // now read the rest of the file
-    while ((c = getc(f)) != EOF){
-      bool isValidValue = true;  // true
-      switch(c){
-      case 'A':
-      case 'a':
-        value = 0x0;
-        break;
-      case 'T':
-      case 't':
-        value = 0x1;
-        break;
-      case 'C':
-      case 'c':
-        value = 0x2;
-        break;
-      case 'G':
-      case 'g':
-        value = 0x3;
-        break;
-      default:
-        isValidValue = false;
-      }
-      if(isValidValue){
-        /* "add" value to the index by bitwise OR */
-        index = index | value;
-        ++a[index & 0xFFFFF];  /* Use the lower 20 bits as a hash */
-        /* shift left the current index by 2 bits*/
-        index = index << 2;
-      }
-}
-
-for(int k = 0; k < SIZE; k++){
-  int i = k;
-  for(int j=0; j < 10; j++){
-    switch( (i & 0xC0000) >> 18){  // get the value in of 20th and 19th bit
-    case 0x0:
-      printf("%c", 'A');
+  // load the first 20 valid bits
+  for(int i = 0; i < 20; i++){
+    c = getc(f);
+    bool isValidValue = true;  // true
+    switch(c){
+    case 'A':
+    case 'a':
+      value = 0x0;
       break;
-    case 0x1:
-      printf("%c", 'T');
+    case 'T':
+    case 't':
+      value = 0x1;
       break;
-    case 0x2:
-      printf("%c", 'C');
+    case 'C':
+    case 'c':
+      value = 0x2;
       break;
-    case 0x3:
-      printf("%c", 'G');
+    case 'G':
+    case 'g':
+      value = 0x3;
       break;
     default:
-      printf("Error: We should never see this\n");
+      isValidValue = false;
+      i = 0;               /* important to get consecutive 10 bits here */
     }
-    i = i << 2;
+    if(isValidValue){
+      /* "add" value to the index by bitwise OR */
+      index = index | value;
+      /* shift left the current index by 2 bits*/
+      index = index << 2;
+    }
   }
-  printf(" %d\n", a[k]);
-}
+
+  ++a[index & 0xFFFFF];           /* Use the lower 20 bits as a hash */
+
+  int location = 20;
+  // now read the rest of the file
+  while ((c = getc(f)) != EOF){
+    bool isValidValue = true;  // true
+    switch(c){
+    case 'A':
+    case 'a':
+      value = 0x0;
+      break;
+    case 'T':
+    case 't':
+      value = 0x1;
+      break;
+    case 'C':
+    case 'c':
+      value = 0x2;
+      break;
+    case 'G':
+    case 'g':
+      value = 0x3;
+      break;
+    default:
+      isValidValue = false;
+    }
+    if(isValidValue){
+      /* "add" value to the index by bitwise OR */
+      index = index | value;
+      /* Use the lower 20 bits as a hash */
+      ++a[index & 0xFFFFF];
+      /* shift left the current index by 2 bits*/
+      index = index << 2;
+    }
+  }
+
+  int max = 0;
+  int above300 = 0;
+  int above400 = 0;
+  int above500 = 0;
+  int above600 = 0;
+
+  for(int k = 0; k < SIZE; k++){
+    int i = k;
+    for(int j=0; j < 10; j++){
+      switch( (i & 0xC0000) >> 18){  // get the value in of 20th and 19th bit
+      case 0x0:
+        printf("%c", 'A');
+        break;
+      case 0x1:
+        printf("%c", 'T');
+        break;
+      case 0x2:
+        printf("%c", 'C');
+        break;
+      case 0x3:
+        printf("%c", 'G');
+        break;
+      default:
+        printf("Error: We should never see this\n");
+      }
+      i = i << 2;
+    }
+    printf(" %d\n", a[k]);
+    max = a[k] > max ? a[k] : max;
+    above300 += a[k] > 100 ? 1 : 0;
+    above400 += a[k] > 150 ? 1 : 0;
+    above500 += a[k] > 500 ? 1 : 0;
+    above600 += a[k] > 600 ? 1 : 0;
+
+  }
+  printf("Max number of apperance is: %d\n", max);
+  printf("Apperance number above 300 is: %d\n", above300);
+  printf("Apperance number above 400 is: %d\n", above400);
+  printf("Apperance number above 500 is: %d\n", above500);
+  printf("Apperance number above 600 is: %d\n", above600);
+
   return 0;
 }
