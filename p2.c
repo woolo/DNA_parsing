@@ -41,7 +41,7 @@ Note: word 1, word 2, and word n are unique.
 #include <stdio.h>
 #include <stdbool.h>
 
-#define SIZE 1048575
+#define SIZE 1048576
 
 int a[SIZE];                    /* intitialize an array with 2^20 0 */
 
@@ -64,7 +64,7 @@ int main(int argc, char **argv){
 
   // now read the file
   while ((c = getc(f)) != EOF){
-    bool isValidValue = true;  // true
+    bool isValidValue = true;
     switch(c){
     case 'A':
     case 'a':
@@ -82,17 +82,21 @@ int main(int argc, char **argv){
     case 'g':
       value = 0x3;
       break;
+    case '\n':
+      --location;
+      isValidValue = false;
+      break;
     default:
       isValidValue = false;
     }
     if(isValidValue){
+      /* shift left the current index by 2 bits*/
+      index = index << 2;
       /* "add" value to the index by bitwise OR */
       index = index | value;
       /* Use the lower 20 bits as a hash */
-      ++location;
       ++a[index & 0xFFFFF];
-      /* shift left the current index by 2 bits*/
-      index = index << 2;
+      ++location;
     }
     else{
       /* use a for loop to get a valid word (10 consecutive characters) */
@@ -117,26 +121,29 @@ int main(int argc, char **argv){
         case 'g':
           value = 0x3;
           break;
+        case '\n':
+          isValidValue = false;
+          --location;
+          break;
         default:
           isValidValue = false;
-          length = 0;               /* important to get consecutive 10 characters here by set length to 0 */
+          length = 0;       /* important to get consecutive 10 characters by reseting length to 0 */
         }
         if(isValidValue){
           ++length;
-          /* "add" value to the index by bitwise OR */
-          index = index | value;
           /* shift left the current index by 2 bits*/
           index = index << 2;
+          /* "add" value to the index by bitwise OR */
+          index = index | value;
         }
       }    // end of for loop
       /* after the for loop we got the valid address */
       ++a[index & 0xFFFFF];
-      /* shift left the current index by 2 bits*/
-      index = index << 2;
     }  // end of else
   }  // end of while loop
 
   int max = 0;
+  int max_of_index = 0;
   int above400 = 0;
   int above500 = 0;
   int above600 = 0;
@@ -146,6 +153,7 @@ int main(int argc, char **argv){
 
   for(int k = 0; k < SIZE; k++){
     int i = k;
+    /* the for loop is for printing the word pattern */
     for(int j=0; j < 10; j++){
       switch( (i & 0xC0000) >> 18){  // get the value in of 20th and 19th bit as a 2 bit binary
       case 0x0:
@@ -167,6 +175,8 @@ int main(int argc, char **argv){
       i = i << 2;
     }
     printf(" %d\n", a[k]);
+
+    max_of_index = a[k] > max ? k : max_of_index;
     max = a[k] > max ? a[k] : max;
     above400 += a[k] > 400 ? 1 : 0;
     above500 += a[k] > 500 ? 1 : 0;
@@ -175,13 +185,36 @@ int main(int argc, char **argv){
     above800 += a[k] > 800 ? 1 : 0;
     above900 += a[k] > 900 ? 1 : 0;
   }
-  printf("Max number of apperance is: %d\n", max);
+
+  int i = max_of_index;
+  for(int j=0; j < 10; j++){
+      switch( (i  & 0xC0000) >> 18){  // get the value in of 20th and 19th bit as a 2 bit binary
+      case 0x0:
+        printf("%c", 'A');
+        break;
+      case 0x1:
+        printf("%c", 'T');
+        break;
+      case 0x2:
+        printf("%c", 'C');
+        break;
+      case 0x3:
+        printf("%c", 'G');
+        break;
+      default:
+        fprintf(stderr, "Error: Unexpected pasred value.\n");
+        return 1;
+      }
+      i = i << 2;
+    }
+  printf(" has the most cocurrences: %d\n", max);
   printf("Apperance number above 400 is: %d\n", above400);
   printf("Apperance number above 500 is: %d\n", above500);
   printf("Apperance number above 600 is: %d\n", above600);
   printf("Apperance number above 700 is: %d\n", above700);
   printf("Apperance number above 800 is: %d\n", above800);
   printf("Apperance number above 900 is: %d\n", above900);
+  printf("Final location value: %d\n", location);
 
   return 0;
 }
