@@ -208,12 +208,12 @@ int main(int argc, char **argv){
       i = i << 2;
     }
   printf(" has the most cocurrences: %d\n", max);
-  printf("Apperance number above 400 is: %d\n", above400);
-  printf("Apperance number above 500 is: %d\n", above500);
-  printf("Apperance number above 600 is: %d\n", above600);
-  printf("Apperance number above 700 is: %d\n", above700);
-  printf("Apperance number above 800 is: %d\n", above800);
-  printf("Apperance number above 900 is: %d\n", above900);
+  printf("The occurrence of numbers above 400 is: %d\n", above400);
+  printf("The occurrence of numbers above 500 is: %d\n", above500);
+  printf("The occurrence of numbers above 600 is: %d\n", above600);
+  printf("The occurrence of numbers above 700 is: %d\n", above700);
+  printf("The occurrence of numbers above 800 is: %d\n", above800);
+  printf("The occurrence of numbers above 900 is: %d\n", above900);
   printf("Final location value: %d\n", location);
 
   return 0;
