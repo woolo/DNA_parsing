@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -x
+
 rm -f p2
 
 gcc -o p2 p2.c
