@@ -1,0 +1,36 @@
+* Human DNA Parsing
+** Task Description
+A human chromosome is represented as a long string. This C program is
+for counting the occurrences of all words of length 10 in [[http://hgdownload.soe.ucsc.edu/goldenPath/hg38/chromosomes/chr1.fa.gz][the human
+chromosome 1]].
+
+A word in this context is a substring starting at any nucleotide and
+has a length of 10. Each nucleotide represents the beginning of a
+word. Yes, these words are overlapping, and are NOT separated by
+spaces.
+
+The chromosome file must be provided to your program as a command line
+argument. Sequences of human chromosomes may contain additional
+letters when the identity of the nucleotide cannot be determined
+precisely. Words consisting of A, C, G, and T only must be counted;
+all other words must not. The counting is NOT case-sensitive.
+
+** Design
+Since the data we are going to process is huge, we need to think about
+the tradeoff between computation resource and the RAM we have.  In
+this implementation, we go through the entire file twice: For the
+first time, we need to count the occurence times of each word, which
+helps us to allocate only RAM that we will use; For the second time,
+we store the location to the porper place of the array.  Therefore,
+although we process the entire file twice, which cause a little bit
+more computation resource, it saves us tons of RAM comparing to
+allocating a SIZE*SIZE 2d array.
+
+** Implememtation
+We use bitwise operation to get the index to make the program efficient.
+
+** Testing
+The run.sh is an aotomation testing against the students work.
+#+BEGIN_SRC bash
+  ./run.sh
+#+END_SRC
